@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Study Buddy - Premium Study Assistant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .premium-badge {
+            display: inline-block;
+            background: gold;
+            color: #333;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+
+        .subscription-status {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .subscription-status.premium {
+            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+            color: #333;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        .card.locked {
+            opacity: 0.6;
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .chat-container {
+            grid-column: 1 / -1;
+            height: 500px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 12px 16px;
+            border-radius: 10px;
+            max-width: 80%;
+            line-height: 1.5;
+        }
+
+        .message.user {
+            background: #667eea;
+            color: white;
+            margin-left: auto;
+        }
+
+        .message.ai {
+            background: white;
+            color: #333;
+            border: 1px solid #e0e0e0;
+        }
+
+        .chat-input-area {
+            display: flex;
+            gap: 10px;
+        }
+
+        input[type="text"], input[type="password"], textarea {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            font-family: inherit;
+        }
+
+        button {
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #5568d3;
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        button.premium-btn {
+            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+            color: #333;
+        }
+
+        button.premium-btn:hover {
+            background: linear-gradient(135deg, #fda085 0%, #f6d365 100%);
+        }
+
+        .api-setup {
+            margin-bottom: 20px;
+        }
+
+        .api-setup input {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .feature-btn {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 15px;
+            text-align: left;
+            background: #f8f9fa;
+            color: #333;
+            border: 2px solid #e0e0e0;
+            position: relative;
+        }
+
+        .feature-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .feature-btn.locked:hover {
+            background: #f8f9fa;
+            color: #333;
+            border-color: #e0e0e0;
+            cursor: not-allowed;
+        }
+
+        .lock-icon {
+            float: right;
+            font-size: 1.2em;
+        }
+
+        .usage-meter {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .usage-bar {
+            background: #e0e0e0;
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .usage-bar-fill {
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            height: 100%;
+            transition: width 0.3s;
+        }
+
+        .usage-bar-fill.warning {
+            background: linear-gradient(90deg, #f6d365, #fda085);
+        }
+
+        .usage-bar-fill.danger {
+            background: linear-gradient(90deg, #ff6b6b, #ee5a6f);
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .modal-content h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .pricing-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            border: 3px solid transparent;
+        }
+
+        .pricing-card.recommended {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #f6f8ff, #fff);
+        }
+
+        .price {
+            font-size: 3em;
+            font-weight: bold;
+            color: #667eea;
+            margin: 20px 0;
+        }
+
+        .feature-list {
+            text-align: left;
+            margin: 20px 0;
+        }
+
+        .feature-list li {
+            padding: 8px 0;
+            list-style: none;
+        }
+
+        .feature-list li:before {
+            content: "✓ ";
+            color: #4caf50;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .close-modal {
+            background: #e0e0e0;
+            color: #333;
+            margin-top: 20px;
+        }
+
+        .flashcard-container, .quiz-container {
+            display: none;
+        }
+
+        .flashcard {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3em;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
+
+        .quiz-option {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 15px;
+            text-align: left;
+            background: #f8f9fa;
+            color: #333;
+            border: 2px solid #e0e0e0;
+        }
+
+        .status {
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            display: block;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+
+        .study-timer {
+            text-align: center;
+            font-size: 3em;
+            color: #667eea;
+            margin: 20px 0;
+        }
+
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .modal-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎓 AI Study Buddy</h1>
+            <p>Your personal AI-powered learning assistant</p>
+        </div>
+
+        <div class="subscription-status" id="subStatus">
+            <div id="freeStatus">
+                <strong>FREE TIER</strong> - <span id="usageCount">0/10</span> AI messages used today
+                <br><small>Upgrade to Premium for unlimited access!</small>
+            </div>
+            <div id="premiumStatus" style="display: none;">
+                <strong>⭐ PREMIUM MEMBER</strong> - Unlimited AI messages & all features unlocked!
+            </div>
+        </div>
+
+        <div class="card api-setup">
+            <h2>⚙️ Setup</h2>
+            <input type="password" id="apiKey" placeholder="Enter your OpenRouter API Key">
+            <input type="text" id="modelName" placeholder="Model (e.g., meta-llama/llama-3.1-8b-instruct:free)" value="meta-llama/llama-3.1-8b-instruct:free">
+            <button onclick="saveApiKey()">Save API Key</button>
+            
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #e0e0e0;">
+                <h3 style="color: #667eea; margin-bottom: 10px;">Premium License</h3>
+                <input type="text" id="licenseKey" placeholder="Enter your Premium License Key">
+                <button onclick="activateLicense()" class="premium-btn">Activate Premium</button>
+            </div>
+            
+            <div id="status" class="status"></div>
+            <p style="margin-top: 10px; font-size: 0.9em; color: #666;">
+                Get your free API key at <a href="https://openrouter.ai/keys" target="_blank">openrouter.ai/keys</a>
+            </p>
+        </div>
+
+        <div class="main-grid">
+            <div class="card">
+                <h2>🚀 Quick Actions</h2>
+                <button class="feature-btn" onclick="startChat()">💬 Chat with AI Tutor</button>
+                <button class="feature-btn" onclick="generateFlashcards()">
+                    🃏 Generate Flashcards <span class="premium-badge">PRO</span>
+                </button>
+                <button class="feature-btn" onclick="generateQuiz()">
+                    📝 Create Quiz <span class="premium-badge">PRO</span>
+                </button>
+                <button class="feature-btn" onclick="startTimer()">⏱️ Study Timer (25min)</button>
+                <button class="feature-btn" onclick="summarizeNotes()">
+                    📄 Summarize Notes <span class="premium-badge">PRO</span>
+                </button>
+                <button class="feature-btn premium-btn" onclick="showPricingModal()" style="margin-top: 20px;">
+                    ⭐ Upgrade to Premium - $7.99/month
+                </button>
+            </div>
+
+            <div class="card">
+                <h2>📊 Study Stats</h2>
+                <p><strong>Sessions Today:</strong> <span id="sessionsToday">0</span></p>
+                <p><strong>Total Study Time:</strong> <span id="totalTime">0</span> minutes</p>
+                <p><strong>Flashcards Created:</strong> <span id="flashcardsCount">0</span></p>
+                <p><strong>Quizzes Taken:</strong> <span id="quizzesCount">0</span></p>
+                
+                <div class="usage-meter">
+                    <strong>Daily Usage</strong>
+                    <div class="usage-bar">
+                        <div class="usage-bar-fill" id="usageBar" style="width: 0%"></div>
+                    </div>
+                    <small id="usageText">0/10 messages used</small>
+                </div>
+                
+                <div class="study-timer" id="studyTimer" style="display: none;">25:00</div>
+            </div>
+
+            <div class="card chat-container" id="chatContainer" style="display: none;">
+                <h2>💬 AI Tutor Chat</h2>
+                <div class="chat-messages" id="chatMessages"></div>
+                <div class="chat-input-area">
+                    <input type="text" id="chatInput" placeholder="Ask me anything about your studies...">
+                    <button onclick="sendMessage()" id="sendBtn">Send</button>
+                </div>
+            </div>
+
+            <div class="card flashcard-container" id="flashcardContainer">
+                <h2>🃏 Flashcards <span class="premium-badge">PRO</span></h2>
+                <textarea id="flashcardTopic" placeholder="Enter a topic (e.g., 'Photosynthesis', 'Spanish verbs', 'World War 2')" rows="3"></textarea>
+                <button onclick="createFlashcards()" id="createFlashcardsBtn" style="margin-top: 10px;">Generate Flashcards</button>
+                <div id="flashcardsDisplay" style="margin-top: 20px;"></div>
+            </div>
+
+            <div class="card quiz-container" id="quizContainer">
+                <h2>📝 Quiz <span class="premium-badge">PRO</span></h2>
+                <textarea id="quizTopic" placeholder="Enter a topic for the quiz" rows="3"></textarea>
+                <button onclick="createQuiz()" id="createQuizBtn" style="margin-top: 10px;">Generate Quiz</button>
+                <div id="quizDisplay" style="margin-top: 20px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pricing Modal -->
+    <div class="modal" id="pricingModal">
+        <div class="modal-content">
+            <h2>🚀 Upgrade to Premium</h2>
+            <p>Unlock unlimited AI conversations and all premium features!</p>
+            
+            <div class="pricing-card recommended">
+                <h3>Premium Monthly</h3>
+                <div class="price">$7.99<small style="font-size: 0.3em;">/month</small></div>
+                <ul class="feature-list">
+                    <li>Unlimited AI chat messages</li>
+                    <li>Unlimited flashcard generation</li>
+                    <li>Unlimited quiz creation</li>
+                    <li>Advanced note summarization</li>
+                    <li>Priority support</li>
+                    <li>Ad-free experience</li>
+                </ul>
+                <button class="premium-btn" onclick="initiatePurchase('monthly')">Get Premium Now</button>
+            </div>
+            
+            <div class="pricing-card">
+                <h3>Lifetime Access</h3>
+                <div class="price">$49.99<small style="font-size: 0.3em;">one-time</small></div>
+                <p>Pay once, use forever!</p>
+                <button class="premium-btn" onclick="initiatePurchase('lifetime')">Buy Lifetime</button>
+            </div>
+            
+            <button class="close-modal" onclick="closePricingModal()">Maybe Later</button>
+        </div>
+    </div>
+
+    <!-- Usage Limit Modal -->
+    <div class="modal" id="limitModal">
+        <div class="modal-content">
+            <h2>⚠️ Daily Limit Reached</h2>
+            <p>You've used all 10 free AI messages for today!</p>
+            <p style="margin: 20px 0;">Upgrade to Premium for unlimited access and unlock all features.</p>
+            <button class="premium-btn" onclick="showPricingModal()">Upgrade to Premium</button>
+            <button class="close-modal" onclick="closeLimitModal()">I'll Wait Until Tomorrow</button>
+        </div>
+    </div>
+
+    <script>
+        let apiKey = '';
+        let modelName = 'meta-llama/llama-3.1-8b-instruct:free';
+        let isPremium = false;
+        let licenseKey = '';
+        let studyStats = {
+            sessionsToday: 0,
+            totalTime: 0,
+            flashcardsCount: 0,
+            quizzesCount: 0
+        };
+        let dailyUsage = {
+            date: new Date().toDateString(),
+            count: 0,
+            limit: 10
+        };
+        let timerInterval = null;
+        let flashcards = [];
+        let currentFlashcardIndex = 0;
+        let isFlashcardFlipped = false;
+
+        // Load saved data
+        window.onload = function() {
+            const saved = localStorage.getItem('studyBuddyData');
+            if (saved) {
+                const data = JSON.parse(saved);
+                apiKey = data.apiKey || '';
+                modelName = data.modelName || 'meta-llama/llama-3.1-8b-instruct:free';
+                studyStats = data.stats || studyStats;
+                isPremium = data.isPremium || false;
+                licenseKey = data.licenseKey || '';
+                dailyUsage = data.dailyUsage || dailyUsage;
+                
+                // Reset daily usage if it's a new day
+                if (dailyUsage.date !== new Date().toDateString()) {
+                    dailyUsage = {
+                        date: new Date().toDateString(),
+                        count: 0,
+                        limit: 10
+                    };
+                }
+                
+                updateStats();
+                updateSubscriptionStatus();
+                
+                if (apiKey) {
+                    showStatus('Welcome back! API Key loaded.', 'success');
+                }
+            }
+        };
+
+        function saveApiKey() {
+            apiKey = document.getElementById('apiKey').value;
+            modelName = document.getElementById('modelName').value;
+            saveData();
+            showStatus('API Key saved successfully!', 'success');
+        }
+
+        function activateLicense() {
+            const key = document.getElementById('licenseKey').value.trim();
+            
+            // Simple validation - in production, verify with backend
+            if (key.length >= 16 && key.includes('-')) {
+                isPremium = true;
+                licenseKey = key;
+                saveData();
+                updateSubscriptionStatus();
+                showStatus('Premium activated! Enjoy unlimited access! 🎉', 'success');
+            } else {
+                showStatus('Invalid license key. Please check and try again.', 'error');
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('studyBuddyData', JSON.stringify({
+                apiKey: apiKey,
+                modelName: modelName,
+                stats: studyStats,
+                isPremium: isPremium,
+                licenseKey: licenseKey,
+                dailyUsage: dailyUsage
+            }));
+        }
+
+        function updateSubscriptionStatus() {
+            const subStatus = document.getElementById('subStatus');
+            const freeStatus = document.getElementById('freeStatus');
+            const premiumStatus = document.getElementById('premiumStatus');
+            
+            if (isPremium) {
+                subStatus.className = 'subscription-status premium';
+                freeStatus.style.display = 'none';
+                premiumStatus.style.display = 'block';
+            } else {
+                subStatus.className = 'subscription-status';
+                freeStatus.style.display = 'block';
+                premiumStatus.style.display = 'none';
+                updateUsageDisplay();
+            }
+        }
+
+        function updateUsageDisplay() {
+            const usageCount = document.getElementById('usageCount');
+            const usageText = document.getElementById('usageText');
+            const usageBar = document.getElementById('usageBar');
+            
+            usageCount.textContent = `${dailyUsage.count}/${dailyUsage.limit}`;
+            usageText.textContent = `${dailyUsage.count}/${dailyUsage.limit} messages used`;
+            
+            const percentage = (dailyUsage.count / dailyUsage.limit) * 100;
+            usageBar.style.width = percentage + '%';
+            
+            if (percentage >= 90) {
+                usageBar.className = 'usage-bar-fill danger';
+            } else if (percentage >= 70) {
+                usageBar.className = 'usage-bar-fill warning';
+            } else {
+                usageBar.className = 'usage-bar-fill';
+            }
+        }
+
+        function checkUsageLimit() {
+            if (!isPremium && dailyUsage.count >= dailyUsage.limit) {
+                document.getElementById('limitModal').classList.add('active');
+                return false;
+            }
+            return true;
+        }
+
+        function incrementUsage() {
+            if (!isPremium) {
+                dailyUsage.count++;
+                saveData();
+                updateUsageDisplay();
+            }
+        }
+
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = 'status ' + type;
+            setTimeout(() => {
+                status.style.display = 'none';
+            }, 3000);
+        }
+
+        function updateStats() {
+            document.getElementById('sessionsToday').textContent = studyStats.sessionsToday;
+            document.getElementById('totalTime').textContent = studyStats.totalTime;
+            document.getElementById('flashcardsCount').textContent = studyStats.flashcardsCount;
+            document.getElementById('quizzesCount').textContent = studyStats.quizzesCount;
+        }
+
+        function showPricingModal() {
+            document.getElementById('pricingModal').classList.add('active');
+        }
+
+        function closePricingModal() {
+            document.getElementById('pricingModal').classList.remove('active');
+        }
+
+        function closeLimitModal() {
+            document.getElementById('limitModal').classList.remove('active');
+        }
+
+        function initiatePurchase(plan) {
+            // Payment integration goes here
+            // Can be integrated with: Stripe, PayFast, or In-App Purchases
+            
+            alert(`To purchase ${plan} plan:\n\n1. Contact us to get your license key\n2. Enter the license key in the "Premium License" field\n3. Click "Activate Premium"\n\nDemo key for testing: PREMIUM-2024-DEMO-KEY`);
+            
+            closePricingModal();
+        }
+
+        function startChat() {
+            document.getElementById('chatContainer').style.display = 'flex';
+            document.getElementById('flashcardContainer').style.display = 'none';
+            document.getElementById('quizContainer').style.display = 'none';
+            studyStats.sessionsToday++;
+            saveData();
+            updateStats();
+        }
+
+        function generateFlashcards() {
+            if (!isPremium) {
+                showPricingModal();
+                return;
+            }
+            document.getElementById('chatContainer').style.display = 'none';
+            document.getElementById('flashcardContainer').style.display = 'block';
+            document.getElementById('quizContainer').style.display = 'none';
+        }
+
+        function generateQuiz() {
+            if (!isPremium) {
+                showPricingModal();
+                return;
+            }
+            document.getElementById('chatContainer').style.display = 'none';
+            document.getElementById('flashcardContainer').style.display = 'none';
+            document.getElementById('quizContainer').style.display = 'block';
+        }
+
+        function summarizeNotes() {
+            if (!isPremium) {
+                showPricingModal();
+                return;
+            }
+            startChat();
+            document.getElementById('chatInput').value = 'Can you help me summarize my study notes? I will paste them next.';
+        }
+
+        async function sendMessage() {
+            if (!apiKey) {
+                showStatus('Please set your API key first!', 'error');
+                return;
+            }
+
+            if (!checkUsageLimit()) {
+                return;
+            }
+
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            if (!message) return;
+
+            addMessage(message, 'user');
+            input.value = '';
+
+            const sendBtn = document.getElementById('sendBtn');
+            sendBtn.disabled = true;
+            sendBtn.textContent = 'Thinking...';
+
+            try {
+                const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json',
+                        'HTTP-Referer': window.location.href,
+                        'X-Title': 'AI Study Buddy'
+                    },
+                    body: JSON.stringify({
+                        model: modelName,
+                        messages: [
+                            {
+                                role: 'system',
+                                content: 'You are a helpful AI study assistant. Help students learn by explaining concepts clearly, creating study materials, and answering questions. Be encouraging and supportive.'
+                            },
+                            {
+                                role: 'user',
+                                content: message
+                            }
+                        ]
+                    })
+                });
+
+                const data = await response.json();
+                if (data.choices && data.choices[0]) {
+                    addMessage(data.choices[0].message.content, 'ai');
+                    incrementUsage();
+                } else {
+                    addMessage('Sorry, I encountered an error. Please check your API key and try again.', 'ai');
+                }
+            } catch (error) {
+                addMessage('Error connecting to AI. Please check your internet connection and API key.', 'ai');
+            }
+
+            sendBtn.disabled = false;
+            sendBtn.textContent = 'Send';
+        }
+
+        function addMessage(text, sender) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message ' + sender;
+            messageDiv.textContent = text;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        async function createFlashcards() {
+            if (!apiKey) {
+                showStatus('Please set your API key first!', 'error');
+                return;
+            }
+
+            if (!checkUsageLimit()) {
+                return;
+            }
+
+            const topic = document.getElementById('flashcardTopic').value.trim();
+            if (!topic) {
+                showStatus('Please enter a topic!', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('createFlashcardsBtn');
+            btn.disabled = true;
+            btn.textContent = 'Generating...';
+
+            try {
+                const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json',
+                        'HTTP-Referer': window.location.href,
+                        'X-Title': 'AI Study Buddy'
+                    },
+                    body: JSON.stringify({
+                        model: modelName,
+                        messages: [
+                            {
+                                role: 'user',
+                                content: `Create 5 flashcards about "${topic}". Format each as "Q: [question] | A: [answer]" on separate lines.`
+                            }
+                        ]
+                    })
+                });
+
+                const data = await response.json();
+                if (data.choices && data.choices[0]) {
+                    const content = data.choices[0].message.content;
+                    flashcards = content.split('\n').filter(line => line.includes('Q:') && line.includes('A:'));
+                    currentFlashcardIndex = 0;
+                    displayFlashcard();
+                    studyStats.flashcardsCount += flashcards.length;
+                    incrementUsage();
+                    saveData();
+                    updateStats();
+                }
+            } catch (error) {
+                showStatus('Error generating flashcards', 'error');
+            }
+
+            btn.disabled = false;
+            btn.textContent = 'Generate Flashcards';
+        }
+
+        function displayFlashcard() {
+            const display = document.getElementById('flashcardsDisplay');
+            if (flashcards.length === 0) return;
+
+            const card = flashcards[currentFlashcardIndex];
+            const parts = card.split('|');
+            const question = parts[0].replace('Q:', '').trim();
+            const answer = parts[1].replace('A:', '').trim();
+
+            display.innerHTML = `
+                <div class="flashcard" onclick="flipCard()">
+                    ${isFlashcardFlipped ? answer : question}
+                </div>
+                <button onclick="prevCard()" ${currentFlashcardIndex === 0 ? 'disabled' : ''}>← Previous</button>
+                <button onclick="nextCard()" ${currentFlashcardIndex === flashcards.length - 1 ? 'disabled' : ''}>Next →</button>
+                <p style="margin-top: 10px; text-align: center;">Card ${currentFlashcardIndex + 1} of ${flashcards.length}</p>
+            `;}
+
+        function flipCard() {
+            isFlashcardFlipped = !isFlashcardFlipped;
+            displayFlashcard();
+        }
+
+        function nextCard() {
+            if (currentFlashcardIndex < flashcards.length - 1) {
+                currentFlashcardIndex++;
+                isFlashcardFlipped = false;
+                displayFlashcard();
+            }
+        }
+
+        function prevCard() {
+            if (currentFlashcardIndex > 0) {
+                currentFlashcardIndex--;
+                isFlashcardFlipped = false;
+                displayFlashcard();
+            }
+        }
+
+        async function createQuiz() {
+            if (!apiKey) {
+                showStatus('Please set your API key first!', 'error');
+                return;
+            }
+
+            if (!checkUsageLimit()) {
+                return;
+            }
+
+            const topic = document.getElementById('quizTopic').value.trim();
+            if (!topic) {
+                showStatus('Please enter a topic!', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('createQuizBtn');
+            btn.disabled = true;
+            btn.textContent = 'Generating...';
+
+            try {
+                const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json',
+                        'HTTP-Referer': window.location.href,
+                        'X-Title': 'AI Study Buddy'
+                    },
+                    body: JSON.stringify({
+                        model: modelName,
+                        messages: [
+                            {
+                                role: 'user',
+                                content: `Create a multiple choice quiz with 3 questions about "${topic}". Format each question as:
+Q: [question]
+A) [option]
+B) [option]
+C) [option]
+D) [option]
+Correct: [A/B/C/D]
+
+Separate each question with ---`
+                            }
+                        ]
+                    })
+                });
+
+                const data = await response.json();
+                if (data.choices && data.choices[0]) {
+                    displayQuiz(data.choices[0].message.content);
+                    studyStats.quizzesCount++;
+                    incrementUsage();
+                    saveData();
+                    updateStats();
+                }
+            } catch (error) {
+                showStatus('Error generating quiz', 'error');
+            }
+
+            btn.disabled = false;
+            btn.textContent = 'Generate Quiz';
+        }
+
+        function displayQuiz(content) {
+            const display = document.getElementById('quizDisplay');
+            const questions = content.split('---');
+            let html = '';
+
+            questions.forEach((q, index) => {
+                if (q.trim()) {
+                    html += `<div style="margin-bottom: 30px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+                        <pre style="white-space: pre-wrap; font-family: inherit;">${q.trim()}</pre>
+                    </div>`;
+                }
+            });
+
+            display.innerHTML = html;
+        }
+
+        function startTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+
+            const timerDisplay = document.getElementById('studyTimer');
+            timerDisplay.style.display = 'block';
+            let minutes = 25;
+            let seconds = 0;
+
+            timerInterval = setInterval(() => {
+                if (seconds === 0) {
+                    if (minutes === 0) {
+                        clearInterval(timerInterval);
+                        timerDisplay.textContent = 'Done! 🎉';
+                        studyStats.totalTime += 25;
+                        saveData();
+                        updateStats();
+                        setTimeout(() => {
+                            timerDisplay.style.display = 'none';
+                        }, 3000);
+                        return;
+                    }
+                    minutes--;
+                    seconds = 59;
+                } else {
+                    seconds--;
+                }
+                timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatInput = document.getElementById('chatInput');
+            if (chatInput) {
+                chatInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        sendMessage();
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
