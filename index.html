@@ -417,6 +417,7 @@
             <p style="margin-top: 10px; font-size: 0.9em; color: #666;">
                 Get your free API key at <a href="https://openrouter.ai/keys" target="_blank">openrouter.ai/keys</a>
             </p>
+            <button onclick="clearAllData()" style="margin-top: 10px; background: #ff6b6b; font-size: 0.9em;">Clear All Data (Reset App)</button>
         </div>
 
         <div class="main-grid">
@@ -568,11 +569,31 @@
                 updateStats();
                 updateSubscriptionStatus();
                 
-                if (apiKey) {
-                    showStatus('Welcome back! API Key loaded.', 'success');
+                // Only show success message if API key actually exists and is valid
+                if (apiKey && apiKey.length > 20) {
+                    showStatus('Welcome back! API Key loaded. (' + apiKey.substring(0, 10) + '...)', 'success');
+                    // Show the key in the input field (masked)
+                    document.getElementById('apiKey').value = apiKey;
+                    document.getElementById('modelName').value = modelName;
+                } else {
+                    // No valid key found
+                    showStatus('Please enter your OpenRouter API key to get started!', 'error');
+                }
+                
+                // Show license key if exists
+                if (licenseKey) {
+                    document.getElementById('licenseKey').value = licenseKey;
                 }
             }
         };
+        
+        // Function to clear all saved data (for debugging)
+        function clearAllData() {
+            if (confirm('This will clear all saved data including API key, stats, and premium status. Continue?')) {
+                localStorage.removeItem('studyBuddyData');
+                location.reload();
+            }
+        }
 
         function saveApiKey() {
             const keyInput = document.getElementById('apiKey').value.trim();
